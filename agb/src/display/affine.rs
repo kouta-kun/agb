@@ -120,6 +120,18 @@ impl AffineMatrix {
     }
 
     #[must_use]
+    /// Define a Matrix from raw values
+    pub fn from_raw(
+        a: AffineMatrixElement, b: AffineMatrixElement,
+        c: AffineMatrixElement, d: AffineMatrixElement,
+        x: AffineMatrixElement, y: AffineMatrixElement,
+    ) -> Self {
+        Self {
+            a, b, c, d, x, y
+        }
+    }
+
+    #[must_use]
     /// Generates the matrix that represents a rotation
     pub fn from_rotation<const N: usize>(angle: Num<i32, N>) -> Self {
         fn from_rotation(angle: Num<i32, 8>) -> AffineMatrix {

@@ -21,7 +21,7 @@ impl<T> MemoryMapped<T> {
         }
     }
 
-    pub(crate) fn as_ptr(&self) -> *mut T {
+    pub fn as_ptr(&self) -> *mut T {
         self.address
     }
 }

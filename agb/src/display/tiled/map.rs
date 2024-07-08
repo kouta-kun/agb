@@ -484,7 +484,7 @@ impl AffineMap {
         self.priority = priority;
     }
 
-    fn bg_affine_matrix(&self) -> MemoryMapped<AffineMatrixBackground> {
+    pub fn bg_affine_matrix(&self) -> MemoryMapped<AffineMatrixBackground> {
         unsafe { MemoryMapped::new(0x0400_0000 + 0x10 * self.background_id()) }
     }
 }
