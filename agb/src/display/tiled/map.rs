@@ -15,7 +15,6 @@ use super::{
 };
 
 use alloc::{vec, vec::Vec};
-use crate::display::tiled::TileFormat::FourBpp;
 
 pub trait TiledMapTypes: private::Sealed {
     type Size: BackgroundSize + Copy;
@@ -31,7 +30,6 @@ trait TiledMapPrivate: TiledMapTypes {
 
     fn background_id(&self) -> usize;
     fn screenblock(&self) -> usize;
-    fn priority(&self) -> Priority;
     fn map_size(&self) -> Self::Size;
 
     fn update_bg_registers(&self);
@@ -54,8 +52,7 @@ pub trait TiledMap: TiledMapTypes {
     fn size(&self) -> Self::Size;
 }
 
-impl TiledMap for AffineMap
-{
+impl TiledMap for AffineMap {
     fn clear(&mut self, vram: &mut VRamManager) {
         let colours = self.colours();
 
@@ -68,7 +65,7 @@ impl TiledMap for AffineMap
         }
     }
 
-    /// Sets wether the map is visible  
+    /// Sets wether the map is visible
     /// Use [is_visible](TiledMap::is_visible) to get the value
     fn set_visible(&mut self, visible: bool) {
         let mode = DISPLAY_CONTROL.get();
@@ -80,7 +77,7 @@ impl TiledMap for AffineMap
         DISPLAY_CONTROL.set(new_mode);
     }
 
-    /// Checks whether the map is not marked as hidden  
+    /// Checks whether the map is not marked as hidden
     /// Use [set_visible](TiledMap::set_visible) to set the value
     fn is_visible(&self) -> bool {
         DISPLAY_CONTROL.get() & (1 << (self.background_id() + 0x08)) > 0
@@ -90,12 +87,13 @@ impl TiledMap for AffineMap
         let screenblock_memory = self.screenblock_memory() as *mut u8;
 
         if *self.tiles_dirty() {
+            let tiledata: Vec<u8> = self
+                .tiles_mut()
+                .iter()
+                .map(|a| a.tile_index(TileFormat::EightBpp).raw_index() as u8)
+                .collect();
             unsafe {
-                let tiledata: Vec<u8> = self.tiles_mut().iter().map(|a| a.tile_index(FourBpp).raw_index() as u8).collect();
-                screenblock_memory.copy_from(
-                    tiledata.as_ptr(),
-                    self.map_size().num_tiles(),
-                );
+                screenblock_memory.copy_from(tiledata.as_ptr(), self.map_size().num_tiles());
             }
         }
 
@@ -118,8 +116,7 @@ impl TiledMap for AffineMap
         self.map_size()
     }
 }
-impl TiledMap for RegularMap
-{
+impl TiledMap for RegularMap {
     fn clear(&mut self, vram: &mut VRamManager) {
         let colours = self.colours();
 
@@ -217,9 +214,6 @@ impl TiledMapPrivate for RegularMap {
     }
     fn screenblock(&self) -> usize {
         self.screenblock as usize
-    }
-    fn priority(&self) -> Priority {
-        self.priority
     }
     fn map_size(&self) -> Self::Size {
         self.size
@@ -401,9 +395,6 @@ impl TiledMapPrivate for AffineMap {
     }
     fn screenblock(&self) -> usize {
         self.screenblock as usize
-    }
-    fn priority(&self) -> Priority {
-        self.priority
     }
     fn map_size(&self) -> Self::Size {
         self.size
